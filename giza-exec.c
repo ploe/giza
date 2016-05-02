@@ -1,8 +1,4 @@
-#include <glob.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include "giza.h"
 
 typedef struct callback {
 	char *key;
@@ -51,34 +47,26 @@ static int parse_args(char *arg) {
 	}
 }
 
-char *myname;
-
-int globerr(const char *path, int eerrno) {
-	fprintf(stderr, "%s: %s\n", myname, path);
-	return 0;
+static int spit(char *path) {
+	puts(path);
+	return giz_CONTINUE;
 }
 
 
 int main(int argc, char *argv[]) {
-	myname = argv[0];
 
 	int i;
 	for (i = 0; i < argc; i++) {
 		parse_args(argv[i]);	
 	}
 
-	glob_t results;
-	int err = glob("/home/atkinsonm/giza/*", 0, globerr, &results);
+	int err = giz_EachGlob("~/*/*", spit);
 	switch (err) {
 		case GLOB_ABORTED: puts("glob aborted lol!"); break;
 		case GLOB_NOMATCH: puts("glob nomatch lol!"); break;
 		case GLOB_NOSPACE: puts("glob nospace lol!"); break;
 	}
 
-	for(i = 0; i < results.gl_pathc; i++) puts(results.gl_pathv[i]);
-
-	globfree(&results);
-	puts("done!");
 
 	execlp("sort", "sort", NULL, NULL);
 

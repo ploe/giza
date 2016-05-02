@@ -5,7 +5,7 @@ all: giza_exec
 
 
 giza_exec:
-	cc giza-exec.c -o giza-exec
+	cc utils.c giza-exec.c -o giza-exec
 
 install:
 	cp -r $(dir) /etc/giza
