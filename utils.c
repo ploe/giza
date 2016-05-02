@@ -1,7 +1,9 @@
 #include "giza.h"
 
-/*	giz_EachGlob - Iterates over all of the paths defined in [pattern] and
-	calls [func] on them. */
+/*	giz_EachGlob:
+
+	Iterates over all of the paths defined in [pattern] and
+	calls [func] on them.	*/
 
 int giz_EachGlob(char *pattern, int (*func)(char *)) {
 	glob_t g;

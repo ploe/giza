@@ -1,9 +1,11 @@
 #include "giza.h"
 
 typedef struct callback {
-	char *key;
+	char *key, *desc;
 	void (*value)();
 } callback;
+
+static callback options[];
 
 static void call_drivers() {
 	puts("list global and local drivers");
@@ -20,23 +22,22 @@ static void call_help() {
 	puts("    If a JSON arg isn't defined the giza driver will expect one from STDIN.\n");
 
 	puts("options:\n--------");
-	puts("  --drivers\t\tLists the global and local drivers.");
-	puts("  --help\t\tPrints the help information.");
-	puts("  --version\t\tPrints the version of giza you are using.");
-		
+	callback *c;
+	for (c = options; c->key != NULL; c++) printf("  %s\t\t%s\n", c->key, c->desc);
+	
 	exit(0);	
 }
 
 static void call_version() {
-	puts("giza-exec (pre-alpha)");	
+	printf("giza-exec (%s %.2f)\n", _GIZA_VERSION_NAME, _GIZA_VERSION_NUMBER);	
 	exit(0);	
 }
 
 static callback options[] = {
-	{"--drivers", call_drivers},
-	{"--help", call_help},
-	{"--version", call_version},
-	{NULL, NULL},
+	{"--drivers", "Lists the global and local drivers.", call_drivers},
+	{"--help", "Prints the help information.", call_help},
+	{"--version", "Prints the version of giza you are using.", call_version},
+	{NULL, NULL, NULL},
 };
 
 
@@ -48,10 +49,25 @@ static int parse_args(char *arg) {
 }
 
 static int spit(char *path) {
-	puts(path);
+	size_t len = strlen(path) - 1;
+	if (path[len] != '/') {
+		puts(path);				
+	}
+
 	return giz_CONTINUE;
 }
 
+#define PATH_MAX 1024
+char *giz_Read(FILE *fp) {
+	char path[PATH_MAX];
+	char *str = NULL;
+	while (fgets(path, PATH_MAX, fp) != NULL) {
+		printf("%s", path);
+	}
+
+	return str;
+}
+#undef PATH_MAX
 
 int main(int argc, char *argv[]) {
 
@@ -60,7 +76,21 @@ int main(int argc, char *argv[]) {
 		parse_args(argv[i]);	
 	}
 
-	int err = giz_EachGlob("~/*/*", spit);
+
+//	FILE *fp;
+//	int status;
+
+
+//	fp = popen("/bin/echo hello", "r");
+//	if (fp) {
+//		status = pclose(fp);
+//	}
+//
+//
+
+	giz_Read(stdin);
+
+	int err = giz_EachGlob("~/*", spit);
 	switch (err) {
 		case GLOB_ABORTED: puts("glob aborted lol!"); break;
 		case GLOB_NOMATCH: puts("glob nomatch lol!"); break;

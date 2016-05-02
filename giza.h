@@ -8,6 +8,10 @@
 #include <unistd.h>
 
 /*	Constants	*/
+
+#define _GIZA_VERSION_NAME "pre-alpha"
+#define _GIZA_VERSION_NUMBER 0.01
+
 enum {
 	giz_CONTINUE = -1,
 	giz_BREAK
