@@ -57,38 +57,43 @@ static int spit(char *path) {
 	return giz_CONTINUE;
 }
 
-#define PATH_MAX 1024
-char *giz_Read(FILE *fp) {
-	char path[PATH_MAX];
-	char *str = NULL;
-	while (fgets(path, PATH_MAX, fp) != NULL) {
-		printf("%s", path);
-	}
+#define BUFFER_SIZE 1024
+char *giz_AbsorbFile(int fd) {
+	int n, len = 0, size = BUFFER_SIZE;
+	char buffer[BUFFER_SIZE];
+	char *str = calloc(BUFFER_SIZE, sizeof(char)*size);
 
+	while ((n = read(fd, buffer, BUFFER_SIZE)) > 0) {
+		// Double the size of str if we've filled it up with char.
+		if ((len + n) > size) {
+			size *= 2;
+			char *tmp = realloc(str, sizeof(char) * size);
+			if (!tmp) {
+				free(str);
+				return NULL;
+			}
+
+		}	
+		memcpy(str + len, buffer, sizeof(char)*n);
+		len += n;
+	}
 	return str;
 }
-#undef PATH_MAX
+#undef BUFFER_SIZE
 
 int main(int argc, char *argv[]) {
 
-	int i;
-	for (i = 0; i < argc; i++) {
-		parse_args(argv[i]);	
-	}
-
-
-//	FILE *fp;
-//	int status;
-
-
-//	fp = popen("/bin/echo hello", "r");
-//	if (fp) {
-//		status = pclose(fp);
+//	int i;
+//	for (i = 0; i < argc; i++) {
+//		parse_args(argv[i]);	
 //	}
-//
-//
 
-	giz_Read(stdin);
+
+	char *str= giz_AbsorbFile(STDIN_FILENO);
+	puts(str);
+	free(str);
+
+	exit(0);
 
 	int err = giz_EachGlob("~/*", spit);
 	switch (err) {
