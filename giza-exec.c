@@ -1,4 +1,5 @@
 #include "giza.h"
+#include "murp.h"
 
 typedef struct callback {
 	char *key, *desc;
@@ -46,6 +47,9 @@ static void parse_args(char *arg) {
 	for(c = options; c->key != NULL; c++) {
 		if (strcmp(c->key, arg) == 0) c->value();
 	}
+
+//	hank_Set(table, "key", value);
+//	hank_SetObject(table, "key", sizeof(value), (value){ 1,2});
 }
 
 static int spit(char *path) {
@@ -56,6 +60,20 @@ static int spit(char *path) {
 
 	return giz_CONTINUE;
 }
+
+typedef struct KVPair {
+	uint32_t hash;
+	char *key;
+	void *value;
+	int (*destruct)(void *);
+	struct KVPair *prev, *next;	
+} KVPair;
+
+typedef struct Map {
+	KVPair *buckets[UINT8_MAX];
+} Map;
+
+
 int main(int argc, char *argv[]) {
 
 	int i;
