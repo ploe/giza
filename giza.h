@@ -20,5 +20,8 @@ enum {
 
 /* 	utils.c		*/
 int giz_EachGlob(char *pattern, int (*func)(char *));
+char *giz_AbsorbFile(int fd);
+
+
 
 #endif

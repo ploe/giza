@@ -41,7 +41,7 @@ static callback options[] = {
 };
 
 
-static int parse_args(char *arg) {
+static void parse_args(char *arg) {
 	callback *c;
 	for(c = options; c->key != NULL; c++) {
 		if (strcmp(c->key, arg) == 0) c->value();
@@ -56,44 +56,12 @@ static int spit(char *path) {
 
 	return giz_CONTINUE;
 }
-
-#define BUFFER_SIZE 1024
-char *giz_AbsorbFile(int fd) {
-	int n, len = 0, size = BUFFER_SIZE;
-	char buffer[BUFFER_SIZE];
-	char *str = calloc(BUFFER_SIZE, sizeof(char)*size);
-
-	while ((n = read(fd, buffer, BUFFER_SIZE)) > 0) {
-		// Double the size of str if we've filled it up with char.
-		if ((len + n) > size) {
-			size *= 2;
-			char *tmp = realloc(str, sizeof(char) * size);
-			if (!tmp) {
-				free(str);
-				return NULL;
-			}
-
-		}	
-		memcpy(str + len, buffer, sizeof(char)*n);
-		len += n;
-	}
-	return str;
-}
-#undef BUFFER_SIZE
-
 int main(int argc, char *argv[]) {
 
-//	int i;
-//	for (i = 0; i < argc; i++) {
-//		parse_args(argv[i]);	
-//	}
-
-
-	char *str= giz_AbsorbFile(STDIN_FILENO);
-	puts(str);
-	free(str);
-
-	exit(0);
+	int i;
+	for (i = 0; i < argc; i++) {
+		parse_args(argv[i]);	
+	}
 
 	int err = giz_EachGlob("~/*", spit);
 	switch (err) {
@@ -103,7 +71,7 @@ int main(int argc, char *argv[]) {
 	}
 
 
-	execlp("sort", "sort", NULL, NULL);
+	execlp("./giza-user", "giza-user", NULL, NULL);
 
 	return 0;
 }
