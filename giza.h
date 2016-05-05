@@ -8,6 +8,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "murp.h"
+
+
 /*	Constants	*/
 
 #define _GIZA_VERSION_NAME "pre-alpha"
@@ -22,6 +25,7 @@ enum {
 /* 	utils.c		*/
 int giz_EachGlob(char *pattern, int (*func)(char *));
 char *giz_AbsorbFile(int fd);
+int giz_ValidJson(char *json);
 
 
 

@@ -41,16 +41,14 @@ char *giz_AbsorbFile(int fd) {
 	while ((n = read(fd, buffer, BUFFER_SIZE)) > 0) {
 		// Double the size of str if we've filled it up with char.
 		if ((len + n) > size) {
-			printf("(%d + %d) > %d\n", len, n, size);
-			printf("new size: %d\n", size*2);
+//			printf("(%d + %d) > %d\n", len, n, size);
+//			printf("new size: %d\n", size*2);
 			size *= 2;
 			char *tmp = realloc(str, sizeof(char) * size);
-			if (!tmp) {
-				printf("realloc failed\n");
+			if (tmp) str = tmp;
+			else {
 				free(str);
 				return NULL;
-			} else {
-				str = tmp;
 			}
 		}	
 		memcpy(str + len, buffer, sizeof(char)*n);
@@ -61,3 +59,21 @@ char *giz_AbsorbFile(int fd) {
 #undef BUFFER_SIZE
 
 
+/*	giz_ValidJson:
+	
+	Uses murp to ensure the [json] is valid. If it is the value will 
+	be non-zero.	*/
+
+static mp_Atomizer validate_json(mp_Atom atom, void *p) {
+	int *success = p;
+	if (atom.type == mp_DONE) *success = 1;
+	else if(mp_IS_ERROR(atom.type)) return mp_BREAK;
+	return mp_CONTINUE;
+}
+
+int giz_ValidJson(char *json) {
+	int success = 0;
+	mp_Probe(json, validate_json, &success);
+	return success;
+
+}

@@ -1,5 +1,4 @@
 #include "giza.h"
-#include "murp.h"
 
 mp_Atomizer print_atom(mp_Atom atom, void *p) {
 	printf("Atom {\n\tDatatype:\t%d\n\tContainer:\t%d\n", atom.type, atom.container);
@@ -18,9 +17,8 @@ int main(int argc, char *argv[]) {
 	puts("giza user executed!");
 	char *json = giz_AbsorbFile(STDIN_FILENO);
 	puts("absorb complete");
-	mp_Atomize(json, print_atom);
-	puts("atomize complete");
-//	printf("%s", json);
+	if (giz_ValidJson(json)) puts("json was valid");
+	puts("atomize done");
 	free(json);
 	return 0;
 }
