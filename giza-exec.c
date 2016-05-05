@@ -1,5 +1,5 @@
 #include "giza.h"
-#include "murp.h"
+#include "murmur3.h"
 
 typedef struct callback {
 	char *key, *desc;
@@ -47,9 +47,6 @@ static void parse_args(char *arg) {
 	for(c = options; c->key != NULL; c++) {
 		if (strcmp(c->key, arg) == 0) c->value();
 	}
-
-//	hank_Set(table, "key", value);
-//	hank_SetObject(table, "key", sizeof(value), (value){ 1,2});
 }
 
 static int spit(char *path) {
@@ -62,7 +59,7 @@ static int spit(char *path) {
 }
 
 typedef struct KVPair {
-	uint32_t hash;
+	uint8_t hash[16];
 	char *key;
 	void *value;
 	int (*destruct)(void *);
@@ -73,8 +70,25 @@ typedef struct Map {
 	KVPair *buckets[UINT8_MAX];
 } Map;
 
+#define UINT128_LENGTH 16
+
+int Set(Map map, char *key, void *value, int (*destruct)(void *)) {
+	uint8_t hash[16];
+	MurmurHash3_x64_128(key, strlen(key), 0, &hash);
+	int i;
+	for (i = 0; i < 16; i++) {
+		printf("%02X", hash[i]);
+	}
+	printf("\n");
+	return 0;
+}
+
+#undef UINT128_LENGTH
+
 
 int main(int argc, char *argv[]) {
+	Map map;
+	Set(map, "hello, world", NULL, NULL);
 
 	int i;
 	for (i = 0; i < argc; i++) {

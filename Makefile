@@ -1,5 +1,5 @@
 drivers = ./drivers/
-compile = cc -g -O2 -I./murp -I./murmur3/ ./murmur3/murmur3.o ./murp/murp.o
+compile = cc -g -O2 -I./murp -I./murmur3 ./murmur3/murmur3.o ./murp/murp.o
 
 all: giza_exec giza_user
 

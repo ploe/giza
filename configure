@@ -1,7 +1,8 @@
 #! /bin/bash
 
-# Gets and builds the repos needed to build giza
+mkdir ./drivers
 
+# Gets and builds the repos needed to build giza
 
 # murmur3 hashing algorithm
 git clone https://github.com/PeterScott/murmur3.git
