@@ -37,16 +37,21 @@ char *giz_AbsorbFile(int fd) {
 	char buffer[BUFFER_SIZE];
 	char *str = calloc(BUFFER_SIZE, sizeof(char)*size);
 
+	
 	while ((n = read(fd, buffer, BUFFER_SIZE)) > 0) {
 		// Double the size of str if we've filled it up with char.
 		if ((len + n) > size) {
+			printf("(%d + %d) > %d\n", len, n, size);
+			printf("new size: %d\n", size*2);
 			size *= 2;
 			char *tmp = realloc(str, sizeof(char) * size);
 			if (!tmp) {
+				printf("realloc failed\n");
 				free(str);
 				return NULL;
+			} else {
+				str = tmp;
 			}
-
 		}	
 		memcpy(str + len, buffer, sizeof(char)*n);
 		len += n;

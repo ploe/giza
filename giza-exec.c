@@ -53,10 +53,10 @@ static void parse_args(char *arg) {
 }
 
 static int spit(char *path) {
-	size_t len = strlen(path) - 1;
-	if (path[len] != '/') {
-		puts(path);				
-	}
+//	size_t len = strlen(path) - 1;
+//	if (path[len] != '/') {
+//		puts(path);				
+//	}
 
 	return giz_CONTINUE;
 }
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
 	}
 
 
-	execlp("./giza-user", "giza-user", NULL, NULL);
+	execlp("./drivers/giza-user", "giza-user", NULL, NULL);
 
 	return 0;
 }

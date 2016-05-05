@@ -1,7 +1,7 @@
-drivers = drivers/
-compile = cc -g -O2 -L./murp/ -I./murp/ -L./murmur3/ -I./murmur3/
+drivers = ./drivers/
+compile = cc -g -O2 -I./murp -I./murmur3/ ./murmur3/murmur3.o ./murp/murp.o
 
-all: dirs giza_exec giza_user
+all: giza_exec giza_user
 
 giza_exec:
 	$(compile) utils.c giza-exec.c -o giza-exec
