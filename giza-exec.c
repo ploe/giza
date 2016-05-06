@@ -58,8 +58,10 @@ static int spit(char *path) {
 	return giz_CONTINUE;
 }
 
+#define UINT128_LENGTH 16
+
 typedef struct KVPair {
-	uint8_t hash[16];
+	uint8_t hash[UINT128_LENGTH];
 	char *key;
 	void *value;
 	int (*destruct)(void *);
@@ -70,16 +72,25 @@ typedef struct Map {
 	KVPair *buckets[UINT8_MAX];
 } Map;
 
-#define UINT128_LENGTH 16
 
 int Set(Map map, char *key, void *value, int (*destruct)(void *)) {
-	uint8_t hash[16];
-	MurmurHash3_x64_128(key, strlen(key), 0, &hash);
-	int i;
-	for (i = 0; i < 16; i++) {
-		printf("%02X", hash[i]);
+	KVPair *pair = calloc(1, sizeof(KVPair));
+	if (pair) {
+		MurmurHash3_x64_128(key, strlen(key), getpid(), pair->hash);
+		pair->key = calloc(strlen(key) + 1, sizeof(char));
+		strcpy(pair->key, key);
+		pair->value = value;
+		pair->destruct = destruct;
+
+//		KVPair *top = map->buckets[pair->hash[0]], *bucket = NULL, *prev = top;
+//		for (bucket = top; bucket != NULL; bucket = bucket->next) {
+//		}
+		//int i;
+		//for (i = 0; i < 16; i++) {
+		//	printf("%02X", pair->hash[i]);
+		//}
+		//printf("\n");
 	}
-	printf("\n");
 	return 0;
 }
 
