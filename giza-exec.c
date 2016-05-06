@@ -94,7 +94,10 @@ KVPair *NewKVPair(Map *map, char *key) {
 		SetHash(key, pair->hash);
 
 		pair->key = calloc(strlen(key) + 1, sizeof(char));
-		if (!pair->key) return NULL;
+		if (!pair->key) {
+			free(pair);
+			return NULL;
+		}
 		strcpy(pair->key, key);
 
 
@@ -108,7 +111,7 @@ KVPair *NewKVPair(Map *map, char *key) {
 	return pair;
 }
 
-int Set(Map *map, char *key, void *value, int (*destruct)(void *)) {
+int SetWithDestruct(Map *map, char *key, void *value, int (*destruct)(void *)) {
 	KVPair *pair;
 	if ((pair = FindPair(map, key)) == NULL) pair = NewKVPair(map, key);
 
@@ -121,15 +124,35 @@ int Set(Map *map, char *key, void *value, int (*destruct)(void *)) {
 	return 0;
 }
 
+#define Set(map, key, value) SetWithDestruct(map, key, value, NULL)
+
+void ProbePairs(Map *map, int (*func)(char *, void *, void *), void *probe) {
+	if (!func) return;
+
+	int i;
+	for (i = 0; i < UINT8_MAX; i++) {
+		KVPair *pair;
+		for (pair = map->buckets[i]; pair != NULL; pair = pair->next)
+			func(pair->key, pair->value, probe);
+	}
+}
+
+#define ForPairs(key, value) ProbePairs(key, value, NULL)
+
 #undef UINT128_LENGTH
 
+int printpairs(char *key, void *value, void *probe) {
+	printf("'%s':'%p'\n", key, value);
+	return 0;
+}
 
 int main(int argc, char *argv[]) {
 	Map *map = calloc(1, sizeof(Map));
-	Set(map, "hello, world", NULL, NULL);
-	Set(map, "myke my boy", NULL, NULL);
-	Set(map, "hello, world", NULL, NULL);
-	Set(map, "myke my boy", NULL, NULL);
+	Set(map, "hello, world", NULL);
+	Set(map, "myke my boy", NULL);
+	Set(map, "hello, world", NULL);
+	Set(map, "lol wut", NULL);
+	ForPairs(map, printpairs);
 	free(map);
 
 	int i;
@@ -143,7 +166,6 @@ int main(int argc, char *argv[]) {
 		case GLOB_NOMATCH: puts("glob nomatch lol!"); break;
 		case GLOB_NOSPACE: puts("glob nospace lol!"); break;
 	}
-
 
 	execlp("./drivers/giza-user", "giza-user", NULL, NULL);
 
