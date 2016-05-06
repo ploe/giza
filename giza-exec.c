@@ -72,24 +72,51 @@ typedef struct Map {
 	KVPair *buckets[UINT8_MAX];
 } Map;
 
+static void SetHash(char *key, void *out) {
+	MurmurHash3_x64_128(key, strlen(key), getpid(), out);
+}
 
-int Set(Map map, char *key, void *value, int (*destruct)(void *)) {
+static KVPair *FindPair(Map *map, char *key) {
+	uint8_t hash[UINT128_LENGTH];
+	SetHash(key, hash);
+
+	KVPair *top = map->buckets[hash[0]], *pair;
+	for (pair = top; pair != NULL; pair = pair->next) {
+		if (memcmp(hash, pair->hash, sizeof(uint8_t) * UINT128_LENGTH) == 0)
+			if (strcmp(key, pair->key) == 0) return pair;
+	}
+	return NULL;
+}
+
+KVPair *NewKVPair(Map *map, char *key) {
 	KVPair *pair = calloc(1, sizeof(KVPair));
 	if (pair) {
-		MurmurHash3_x64_128(key, strlen(key), getpid(), pair->hash);
+		SetHash(key, pair->hash);
+
 		pair->key = calloc(strlen(key) + 1, sizeof(char));
+		if (!pair->key) return NULL;
 		strcpy(pair->key, key);
+
+
+		KVPair *top = map->buckets[pair->hash[0]];
+		if (top) top->prev = pair;
+		pair->next = top;
+
+		map->buckets[pair->hash[0]] = pair;
+	}
+
+	return pair;
+}
+
+int Set(Map *map, char *key, void *value, int (*destruct)(void *)) {
+	KVPair *pair;
+	if ((pair = FindPair(map, key)) == NULL) pair = NewKVPair(map, key);
+
+	if (pair) {
 		pair->value = value;
 		pair->destruct = destruct;
+		return 1;
 
-//		KVPair *top = map->buckets[pair->hash[0]], *bucket = NULL, *prev = top;
-//		for (bucket = top; bucket != NULL; bucket = bucket->next) {
-//		}
-		//int i;
-		//for (i = 0; i < 16; i++) {
-		//	printf("%02X", pair->hash[i]);
-		//}
-		//printf("\n");
 	}
 	return 0;
 }
@@ -98,8 +125,12 @@ int Set(Map map, char *key, void *value, int (*destruct)(void *)) {
 
 
 int main(int argc, char *argv[]) {
-	Map map;
+	Map *map = calloc(1, sizeof(Map));
 	Set(map, "hello, world", NULL, NULL);
+	Set(map, "myke my boy", NULL, NULL);
+	Set(map, "hello, world", NULL, NULL);
+	Set(map, "myke my boy", NULL, NULL);
+	free(map);
 
 	int i;
 	for (i = 0; i < argc; i++) {
