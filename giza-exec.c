@@ -60,27 +60,27 @@ static int spit(char *path) {
 
 #define UINT128_LENGTH 16
 
-typedef struct KVPair {
+typedef struct ish_KVPair {
 	uint8_t hash[UINT128_LENGTH];
 	char *key;
 	void *value;
 	int (*destruct)(void *);
-	struct KVPair *prev, *next;	
-} KVPair;
+	struct ish_KVPair *prev, *next;	
+} ish_KVPair;
 
-typedef struct Map {
-	KVPair *buckets[UINT8_MAX];
-} Map;
+typedef struct ish_Map {
+	ish_KVPair *buckets[UINT8_MAX];
+} ish_Map;
 
 static void SetHash(char *key, void *out) {
 	MurmurHash3_x64_128(key, strlen(key), getpid(), out);
 }
 
-static KVPair *FindPair(Map *map, char *key) {
+static ish_KVPair *FindPair(ish_Map *map, char *key) {
 	uint8_t hash[UINT128_LENGTH];
 	SetHash(key, hash);
 
-	KVPair *top = map->buckets[hash[0]], *pair;
+	ish_KVPair *top = map->buckets[hash[0]], *pair;
 	for (pair = top; pair != NULL; pair = pair->next) {
 		if (memcmp(hash, pair->hash, sizeof(uint8_t) * UINT128_LENGTH) == 0)
 			if (strcmp(key, pair->key) == 0) return pair;
@@ -88,8 +88,8 @@ static KVPair *FindPair(Map *map, char *key) {
 	return NULL;
 }
 
-KVPair *NewKVPair(Map *map, char *key) {
-	KVPair *pair = calloc(1, sizeof(KVPair));
+ish_KVPair *ish_NewKVPair(ish_Map *map, char *key) {
+	ish_KVPair *pair = calloc(1, sizeof(ish_KVPair));
 	if (pair) {
 		SetHash(key, pair->hash);
 
@@ -101,7 +101,7 @@ KVPair *NewKVPair(Map *map, char *key) {
 		strcpy(pair->key, key);
 
 
-		KVPair *top = map->buckets[pair->hash[0]];
+		ish_KVPair *top = map->buckets[pair->hash[0]];
 		if (top) top->prev = pair;
 		pair->next = top;
 
@@ -111,9 +111,9 @@ KVPair *NewKVPair(Map *map, char *key) {
 	return pair;
 }
 
-int SetWithDestruct(Map *map, char *key, void *value, int (*destruct)(void *)) {
-	KVPair *pair;
-	if ((pair = FindPair(map, key)) == NULL) pair = NewKVPair(map, key);
+int ish_MapSetWithDestruct(ish_Map *map, char *key, void *value, int (*destruct)(void *)) {
+	ish_KVPair *pair;
+	if ((pair = FindPair(map, key)) == NULL) pair = ish_NewKVPair(map, key);
 
 	if (pair) {
 		pair->value = value;
@@ -124,20 +124,20 @@ int SetWithDestruct(Map *map, char *key, void *value, int (*destruct)(void *)) {
 	return 0;
 }
 
-#define Set(map, key, value) SetWithDestruct(map, key, value, NULL)
+#define ish_MapSet(map, key, value) ish_MapSetWithDestruct(map, key, value, NULL)
 
-void ProbePairs(Map *map, int (*func)(char *, void *, void *), void *probe) {
+void ish_MapProbePairs(ish_Map *map, int (*func)(char *, void *, void *), void *probe) {
 	if (!func) return;
 
 	int i;
 	for (i = 0; i < UINT8_MAX; i++) {
-		KVPair *pair;
+		ish_KVPair *pair;
 		for (pair = map->buckets[i]; pair != NULL; pair = pair->next)
 			func(pair->key, pair->value, probe);
 	}
 }
 
-#define ForPairs(key, value) ProbePairs(key, value, NULL)
+#define ish_MapForPairs(key, value) ish_MapProbePairs(key, value, NULL)
 
 #undef UINT128_LENGTH
 
@@ -147,12 +147,12 @@ int printpairs(char *key, void *value, void *probe) {
 }
 
 int main(int argc, char *argv[]) {
-	Map *map = calloc(1, sizeof(Map));
-	Set(map, "hello, world", NULL);
-	Set(map, "myke my boy", NULL);
-	Set(map, "hello, world", NULL);
-	Set(map, "lol wut", NULL);
-	ForPairs(map, printpairs);
+	ish_Map *map = calloc(1, sizeof(ish_Map));
+	ish_MapSet(map, "hello, world", NULL);
+	ish_MapSet(map, "myke my boy", NULL);
+	ish_MapSet(map, "hello, world", NULL);
+	ish_MapSet(map, "lol wut", NULL);
+	ish_MapForPairs(map, printpairs);
 	free(map);
 
 	int i;
