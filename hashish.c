@@ -1,5 +1,7 @@
 #include "hashish.h"
 
+/*	KVPair methods	*/
+
 /*	SetHash.
 	Uses Murmur3 to convert a [key] in to a new [hash]	*/
 
@@ -23,7 +25,8 @@ static ish_KVPair *FindPair(ish_Map *map, char *key) {
 	return NULL;
 }
 
-
+/*	NewKVPair:
+	Creates a new KVPair at [key] on the [map]	*/
 
 static ish_KVPair *NewKVPair(ish_Map *map, char *key) {
 	ish_KVPair *pair = calloc(1, sizeof(ish_KVPair));
@@ -48,6 +51,15 @@ static ish_KVPair *NewKVPair(ish_Map *map, char *key) {
 	return pair;
 }
 
+/*	ish_Map methods.	*/
+
+/*	ish_MapSetWithDestruct (public):
+	In [map] we set KVPair [key] to have [value] as its value and
+	destruct as its destruct.
+
+	As part of the library there is a macro ish_SetMap, which passes a NULL 
+	destructor.	*/
+
 int ish_MapSetWithDestruct(ish_Map *map, char *key, void *value, int (*destruct)(void *)) {
 	ish_KVPair *pair;
 	if ((pair = FindPair(map, key)) == NULL) pair = NewKVPair(map, key);
@@ -61,6 +73,19 @@ int ish_MapSetWithDestruct(ish_Map *map, char *key, void *value, int (*destruct)
 	return 0;
 }
 
+/*	ish_MapProbePairs (public):
+	In [map] we iterate over all of the KVPairs and call [func] on each.
+
+	The signature for [func] is:
+	'int func(char *[key], void *[value], void *[probe])'
+
+	- [key] is the key of the KVPair.
+	- [value] is the value of the KVPair.
+	- [probe] is a pointer to an object that you want passing 
+	when [func] is called.	
+
+	There is a macro called ish_MapForPairs which calls this but 
+	probe is set to NULL	*/
 
 void ish_MapProbePairs(ish_Map *map, int (*func)(char *, void *, void *), void *probe) {
 	if (!func) return;
